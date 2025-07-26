@@ -1,0 +1,13 @@
+{
+  "name": "image-to-excel-vercel",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "openai": "^4.7.1",
+    "xlsx": "^0.18.5"
+  }
+}

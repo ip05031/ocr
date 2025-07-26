@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Convertir Imagen a Excel</title>
+</head>
+<body>
+  <h2>Subir imagen para convertir a Excel</h2>
+  <input type="file" id="imageInput" accept="image/*" />
+  <button onclick="convertImage()">Convertir</button>
+  <br /><br />
+  <a id="downloadLink" style="display: none;">Descargar Excel</a>
+
+  <script>
+    async function convertImage() {
+      const file = document.getElementById('imageInput').files[0];
+      if (!file) return alert('Selecciona una imagen');
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result.split(',')[1];
+
+        const response = await fetch("/api/convert", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: base64Image })
+        });
+
+        if (!response.ok) {
+          alert("Error al procesar la imagen");
+          return;
+        }
+
+        const data = await response.json();
+        const excelBase64 = data.excelBase64;
+
+        const link = document.getElementById("downloadLink");
+        link.href = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + excelBase64;
+        link.download = "archivo.xlsx";
+        link.style.display = "inline";
+        link.textContent = "Descargar archivo Excel";
+      };
+
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
