@@ -1,10 +1,4 @@
-import { Configuration, OpenAIApi } from "openai";
 import * as XLSX from "xlsx";
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY
-});
-const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -13,6 +7,12 @@ export default async function handler(req, res) {
 
   try {
     const { imageBase64 } = req.body;
+    const { Configuration, OpenAIApi } = await import("openai");
+
+    const configuration = new Configuration({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    const openai = new OpenAIApi(configuration);
 
     const completion = await openai.createChatCompletion({
       model: "gpt-4-vision-preview",
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
           ]
         }
       ],
-      max_tokens: 1000
+      max_tokens: 1000,
     });
 
     const extracted = completion.data.choices[0].message.content;
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ excelBase64: buffer.toString("base64") });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al procesar la imagen" });
+    console.error("Error en función /api/convert:", err);
+    res.status(500).json({ error: err.message || "Error interno del servidor" });
   }
 }
