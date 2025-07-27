@@ -1,3 +1,4 @@
+import OpenAI from "openai";
 import * as XLSX from "xlsx";
 
 export default async function handler(req, res) {
@@ -7,29 +8,27 @@ export default async function handler(req, res) {
 
   try {
     const { imageBase64 } = req.body;
-    const { Configuration, OpenAIApi } = await import("openai");
 
-    const configuration = new Configuration({
+    const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-    const openai = new OpenAIApi(configuration);
 
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4-vision-preview",
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "user",
           content: [
             { type: "text", text: "Extrae el contenido como tabla para exportar a Excel." },
-            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } }
-          ]
-        }
+            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } },
+          ],
+        },
       ],
       max_tokens: 1000,
     });
 
-    const extracted = completion.data.choices[0].message.content;
-    const rows = extracted.trim().split("\n").map(r => r.split(/\s{2,}|\t/));
+    const extracted = completion.choices[0].message.content;
+    const rows = extracted.trim().split("\n").map((r) => r.split(/\s{2,}|\t/));
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(rows);
